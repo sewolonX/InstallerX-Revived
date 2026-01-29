@@ -165,8 +165,8 @@ class FileLoggingTree(context: Context) : Timber.DebugTree() {
 
     companion object {
         private const val TAG = "FileLoggingTree"
-        private const val MAX_LOG_FILES = 1
-        private const val MAX_FILE_SIZE = 2 * 1024 * 1024L // 2MB
+        private const val MAX_LOG_FILES = 2
+        private const val MAX_FILE_SIZE = 4 * 1024 * 1024L // 4MB
         private const val MAX_LOG_AGE_MS = 24 * 60 * 60 * 1000L // 24 Hours
 
         const val LOG_DIR_NAME = "logs"
