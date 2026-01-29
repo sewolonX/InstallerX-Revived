@@ -466,15 +466,25 @@ fun ClearCache() {
                         context.cacheDir,
                         context.externalCacheDir
                     )
+                    val blacklistExtensions = listOf(".lck", ".lock")
+                    fun clearFile(file: File): Boolean {
+                        if (!file.exists()) return true
+                        if (blacklistExtensions.any { file.name.endsWith(it) }) return false
 
-                    fun clearFile(file: File) {
-                        if (!file.exists()) return
                         if (file.isDirectory) {
-                            file.listFiles()?.forEach {
-                                clearFile(it)
+                            val children = file.listFiles()
+                            var allChildrenDeleted = true
+                            children?.forEach { child ->
+                                val deleted = clearFile(child)
+                                if (!deleted) {
+                                    allChildrenDeleted = false
+                                }
+                            }
+                            if (!allChildrenDeleted) {
+                                return false
                             }
                         }
-                        file.delete()
+                        return file.delete()
                     }
                     paths.forEach { clearFile(it) }
                 }

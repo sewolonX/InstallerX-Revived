@@ -7,6 +7,7 @@ import com.rosan.installer.build.RsConfig
 import com.rosan.installer.build.model.entity.Level
 import com.rosan.installer.data.recycle.model.impl.AutoLockManager
 import com.rosan.installer.di.init.appModules
+import com.rosan.installer.util.timber.FileLoggingTree
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
@@ -27,8 +28,7 @@ class App : Application() {
             MonetCompat.getInstance().updateMonetColors()
         }
 
-        if (RsConfig.LEVEL == Level.PREVIEW || RsConfig.LEVEL == Level.UNSTABLE || RsConfig.isDebug)
-            Timber.plant(Timber.DebugTree())
+        initTimber()
 
         startKoin {
             // Koin Android Logger
@@ -41,5 +41,13 @@ class App : Application() {
 
         // Initialize Shizuku module
         AutoLockManager.init()
+    }
+
+    private fun initTimber() {
+        if (RsConfig.LEVEL == Level.PREVIEW || RsConfig.LEVEL == Level.UNSTABLE || RsConfig.isDebug) {
+
+            Timber.plant(Timber.DebugTree())
+            Timber.plant(FileLoggingTree(this))
+        }
     }
 }

@@ -341,11 +341,8 @@ fun MiuixDefaultInstaller(
 fun MiuixClearCache() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    var inProgress by remember {
-        mutableStateOf(false)
-    }
+    var inProgress by remember { mutableStateOf(false) }
     var cacheSize by remember { mutableLongStateOf(0L) }
-    // A trigger to recalculate the cache size
     var calculationTrigger by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(calculationTrigger) {
@@ -372,35 +369,53 @@ fun MiuixClearCache() {
                 inProgress = true
                 val startTime = System.currentTimeMillis()
 
-                // Perform the actual clearing operation on the IO dispatcher
                 withContext(Dispatchers.IO) {
                     val paths = listOfNotNull(
                         context.cacheDir,
                         context.externalCacheDir
                     )
 
-                    fun clearFile(file: File) {
-                        if (!file.exists()) return
+                    // Define files that should not be deleted
+                    val blacklistExtensions = listOf(".lck", ".lock")
+
+                    fun clearFile(file: File): Boolean {
+                        if (!file.exists()) return true
+
+                        // Skip blacklisted files
+                        if (blacklistExtensions.any { file.name.endsWith(it) }) return false
+
                         if (file.isDirectory) {
-                            file.listFiles()?.forEach {
-                                clearFile(it)
+                            val children = file.listFiles()
+                            var allChildrenDeleted = true
+                            children?.forEach { child ->
+                                val deleted = clearFile(child)
+                                if (!deleted) {
+                                    allChildrenDeleted = false
+                                }
+                            }
+                            // If any child remains, we cannot delete this directory
+                            if (!allChildrenDeleted) {
+                                return false
                             }
                         }
-                        file.delete()
+                        return file.delete()
                     }
-                    paths.forEach { clearFile(it) }
+
+                    // Iterate through each cache root and clear its content
+                    paths.forEach { root ->
+                        root.listFiles()?.forEach { child ->
+                            clearFile(child)
+                        }
+                    }
                 }
 
                 val elapsedTime = System.currentTimeMillis() - startTime
-
-                // If the operation was too fast, wait for the remaining time
                 if (elapsedTime < MIN_FEEDBACK_DURATION_MS) {
                     delay(MIN_FEEDBACK_DURATION_MS - elapsedTime)
                 }
 
-                cacheSize = 0L
                 inProgress = false
-                // Trigger a recalculation of the cache size
+                // Increment trigger to refresh the displayed cache size
                 calculationTrigger++
             }
         }
