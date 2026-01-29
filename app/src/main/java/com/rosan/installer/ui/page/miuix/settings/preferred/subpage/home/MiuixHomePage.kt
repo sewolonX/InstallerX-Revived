@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -146,11 +147,13 @@ fun MiuixHomePage(
                 .scrollEndHaptic()
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .padding(top = paddingValues.calculateTopPadding() + 48.dp)
+                .padding(top = paddingValues.calculateTopPadding())
         ) {
             item {
                 Column(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 48.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
@@ -173,15 +176,14 @@ fun MiuixHomePage(
                         style = MiuixTheme.textStyles.subtitle,
                         color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                     )
+                    if (state.hasUpdate)
+                        Text(
+                            text = stringResource(R.string.update_available, state.remoteVersion),
+                            style = MiuixTheme.textStyles.subtitle,
+                            color = MiuixTheme.colorScheme.primary
+                        )
                     Spacer(modifier = Modifier.size(12.dp))
                 }
-            }
-            if (state.hasUpdate) item {
-                Text(
-                    text = stringResource(R.string.update_available, state.remoteVersion),
-                    style = MiuixTheme.textStyles.subtitle,
-                    color = MiuixTheme.colorScheme.primary
-                )
             }
             item { Spacer(modifier = Modifier.size(12.dp)) }
             item { SmallTitle(stringResource(R.string.about)) }
@@ -240,6 +242,7 @@ fun MiuixHomePage(
                     }
                 }
             }
+            item { Spacer(Modifier.navigationBarsPadding()) }
         }
     }
 
